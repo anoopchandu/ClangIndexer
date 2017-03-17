@@ -247,10 +247,24 @@ visitor (CXCursor cursor, CXCursor parent, CXClientData clientData)
   IdeClangASTIndexer *self = IDE_CLANG_AST_INDEXER (clientData);
   guint32 file_id;
   gint32 declaration_id;
+  CXSourceLocation location;
+  CXFile file;
+  CXString file_name;
 
   g_assert (IDE_IS_CLANG_AST_INDEXER (self));
 
   cursorKind = clang_getCursorKind (cursor);
+
+  if (clang_Location_isInSystemHeader (clang_getCursorLocation (cursor)))
+      goto end;
+
+  location = clang_getCursorLocation (cursor);
+  clang_getSpellingLocation (location, &file, NULL, NULL, NULL);
+  file_name = clang_getFileName (file);
+  if (g_str_has_prefix (clang_getCString (file_name), "/usr"))
+  {
+    goto end;
+  }
 
   if (cursorKind == CXCursor_DeclRefExpr || cursorKind == CXCursor_MemberRefExpr || 
       cursorKind == CXCursor_TypeRef || cursorKind == CXCursor_MacroExpansion)
@@ -276,9 +290,10 @@ visitor (CXCursor cursor, CXCursor parent, CXClientData clientData)
     {
       record_declaration (self, cursor, &file_id, &declaration_id);
     }
-
+end:
   clang_visitChildren (cursor, visitor, clientData);
 
+  clang_disposeString (file_name);
   return CXChildVisit_Continue;
 }
 

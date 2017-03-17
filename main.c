@@ -35,7 +35,7 @@ int main (int numargs, char* args[])
       fscanf (file, "%s", inp);
       commands[i][j] = g_strdup (inp);
     }
-    ide_clang_indexer_insert_command (indexer, commands[i][0], commands[i], nargs);
+    ide_clang_indexer_insert_command (indexer, commands[i][0], &commands[i][1], nargs);
   }
 
   // printf ("Enter to start\n");

@@ -46,8 +46,6 @@ ide_clang_indexer_start (IdeClangIndexer *self)
 
       command = (CompilationCommand*) list->data;
 
-  // printf ("Enter to parse\n");
-  // getchar ();
       clang_parseTranslationUnit2 (index,
                                    command->source_file, 
                                    command->command_line_args, command->num_args,
@@ -60,8 +58,7 @@ ide_clang_indexer_start (IdeClangIndexer *self)
         {
           g_print ("cannot create translation unit for %s\n", command->source_file);
         }
-  //         printf ("Enter to index\n");
-  // getchar ();
+
       ide_clang_ast_indexer_index (self->ast_indexer, &tu, self->index);
       clang_disposeTranslationUnit (tu);
     }
