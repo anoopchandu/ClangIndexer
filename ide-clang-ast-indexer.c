@@ -1,7 +1,6 @@
 /* This traverses AST and puts declarations and references into IdeClangindex */
 
 #include <clang-c/Index.h>
-#include <stdio.h>
 #include <glib.h>
 
 #include "ide-clang-ast-indexer.h"
@@ -151,7 +150,7 @@ record_declaration (IdeClangASTIndexer *self,
       *decl_cursor_cp = decl_cursor;
 
       g_hash_table_insert (self->declarations, decl_cursor_cp, declaration);
-      
+      g_print (".");
       clang_disposeString (file_name);
       clang_disposeString (USR);
     }
@@ -207,11 +206,10 @@ record_reference (IdeClangASTIndexer *self,
     }
 
   record_declaration (self, decl_cursor, &declaration_file_id, &declaration_id);
-
   /* should optimize this */
   start_location = clang_getCursorLocation (cursor);
   clang_getSpellingLocation (start_location, NULL, &start_line, &start_column, NULL);
-  
+
   range = clang_getCursorExtent (cursor);
   end_location = clang_getRangeEnd (range);
   clang_getSpellingLocation (end_location, NULL, &end_line, &end_column, NULL);
@@ -219,6 +217,8 @@ record_reference (IdeClangASTIndexer *self,
   range = clang_getRange (start_location, end_location);
 
   clang_tokenize (self->tu, range, &tokens, &num_tokens);
+  if (num_tokens == 0)
+    goto clean;
 
   /*TODO : For some constructs first few tokens needs to be taken like c++ destructor*/
   range = clang_getTokenExtent (self->tu, tokens[0]);
@@ -232,10 +232,13 @@ record_reference (IdeClangASTIndexer *self,
   file_name = clang_getFileName (file);
 
   /*assuming a token will be on single line*/
+
   ide_clang_index_record_reference (index, clang_getCString (file_name),
                                     start_line, start_column, end_column, type,
                                     declaration_file_id, declaration_id);
+  g_print (".");
 
+clean:
   clang_disposeTokens (self->tu, tokens, num_tokens);
   clang_disposeString (file_name);
 }
@@ -243,28 +246,18 @@ record_reference (IdeClangASTIndexer *self,
 enum CXChildVisitResult
 visitor (CXCursor cursor, CXCursor parent, CXClientData clientData)
 {
-  enum CXCursorKind cursorKind, parentCursorKind;
+  enum CXCursorKind cursorKind;
   IdeClangASTIndexer *self = IDE_CLANG_AST_INDEXER (clientData);
   guint32 file_id;
   gint32 declaration_id;
-  CXSourceLocation location;
-  CXFile file;
-  CXString file_name;
 
   g_assert (IDE_IS_CLANG_AST_INDEXER (self));
 
+  // print_cursor (self, cursor);
   cursorKind = clang_getCursorKind (cursor);
 
-  if (clang_Location_isInSystemHeader (clang_getCursorLocation (cursor)))
-      goto end;
-
-  location = clang_getCursorLocation (cursor);
-  clang_getSpellingLocation (location, &file, NULL, NULL, NULL);
-  file_name = clang_getFileName (file);
-  if (g_str_has_prefix (clang_getCString (file_name), "/usr"))
-  {
-    goto end;
-  }
+//   if (clang_Location_isInSystemHeader (clang_getCursorLocation (cursor)))
+//       goto end;
 
   if (cursorKind == CXCursor_DeclRefExpr || cursorKind == CXCursor_MemberRefExpr || 
       cursorKind == CXCursor_TypeRef || cursorKind == CXCursor_MacroExpansion)
@@ -290,11 +283,8 @@ visitor (CXCursor cursor, CXCursor parent, CXClientData clientData)
     {
       record_declaration (self, cursor, &file_id, &declaration_id);
     }
-end:
-  clang_visitChildren (cursor, visitor, clientData);
 
-  clang_disposeString (file_name);
-  return CXChildVisit_Continue;
+  return CXChildVisit_Recurse;
 }
 
 /* Extracts declarations and references from Translation Unit and 
@@ -302,7 +292,7 @@ end:
  */
 void
 ide_clang_ast_indexer_index (IdeClangASTIndexer *self,
-                             CXTranslationUnit *tu,
+                             CXTranslationUnit tu,
                              IdeClangIndex *index)
 {
   CXCursor rootCursor;
@@ -310,8 +300,8 @@ ide_clang_ast_indexer_index (IdeClangASTIndexer *self,
   g_assert (IDE_IS_CLANG_AST_INDEXER (self));
 
   self->index = index;
-  self->tu = *tu;
-  rootCursor = clang_getTranslationUnitCursor (self->tu);
+  self->tu = tu;
+  rootCursor = clang_getTranslationUnitCursor (tu);
 
   clang_visitChildren (rootCursor, visitor, self);
 }

@@ -52,8 +52,9 @@ int main (int numargs, char* args[])
                                         inp, line, column,
                                         &dest_file_name, &dest_line, &dest_column,
                                         &dest_type);
-    g_print ("\tFile : %s\n\tLine : %u\n\tColumn : %u\n\ttype : %u\n",
-             dest_file_name, dest_line, dest_column, dest_type); 
+    if (dest_file_name != NULL)
+      g_print ("\tFile : %s\n\tLine : %u\n\tColumn : %u\n\ttype : %u\n",
+               dest_file_name, dest_line, dest_column, dest_type); 
     g_print ("> ");
   }
   printf("\n");

@@ -66,8 +66,8 @@ ide_clang_index_record_declaration (IdeClangIndex *self,
 
   *file_id = file_index->file_id;
 
-  g_print ("recording decl : %s line : %u, start column : %u in file : %s\n", 
-           unique_string, line, start_column, file_name);
+  // g_print ("recording decl : %s line : %u, start column : %u in file : %s\n", 
+  //          unique_string, line, start_column, file_name);
 
   ide_clang_file_index_record_declaration (file_index->index, unique_string,
                                            line, start_column, 
@@ -95,8 +95,8 @@ ide_clang_index_record_reference (IdeClangIndex *self,
       return;
     }
 
-  g_print ("recording ref line : %u, start column : %u, end column %u in file : %s\n", 
-           line, start_column, end_column, file_name);
+  // g_print ("recording ref line : %u, start column : %u, end column %u in file : %s\n", 
+  //          line, start_column, end_column, file_name);
 
   ide_clang_file_index_record_reference (file_index->index, line, start_column, end_column, type,
                                          file_id, declaration_id);
@@ -191,6 +191,11 @@ ide_clang_index_search_by_location (IdeClangIndex *self,
 
   g_assert (IDE_IS_CLANG_INDEX (self));
 
+  *dest_file_name = NULL;
+  *dest_line = 0;
+  *dest_column = 0;
+  *dest_type = 0;
+
   /* Get information of refernce and declaration.
    * For this first get reference type, declaration file id and declaration id
    * Then get file name, USR, line, column, type of declaration referenced
@@ -209,10 +214,6 @@ ide_clang_index_search_by_location (IdeClangIndex *self,
                                                    &decl_file_id, &decl_id);
   if(decl_file_id == 0)
     {
-      *dest_file_name = NULL;
-      *dest_line = 0;
-      *dest_column = 0;
-      *dest_type = 0;
       g_print ("No declarations found\n");
       return;
     }
@@ -237,31 +238,32 @@ ide_clang_index_search_by_location (IdeClangIndex *self,
    * For reference if definition is not found then return declaration.
    * For Declaration of definition is not found then return nothing
    */
+  *dest_file_name = decl_file_name;
+  *dest_line = decl_line;
+  *dest_column = decl_column;
+  *dest_type = decl_type;
+
   if (decl_id < 0 || decl_type == RT_Definition)
     {
-      *dest_file_name = decl_file_name;
-      *dest_line = decl_line;
-      *dest_column = decl_column;
-      *dest_type = decl_type;
+      return ;
     }
   else
     {
+
       ide_clang_index_search_by_USR (self, USR,
-                                     dest_file_name, dest_line, dest_column);
-      if (dest_line == 0 || ref_type == RT_Reference)
-      {
-        *dest_file_name = decl_file_name;
-        *dest_line = decl_line;
-        *dest_column = decl_column;
-        *dest_type = decl_type;
-      }
-      else
-      {
-        *dest_file_name = NULL;
-        *dest_line = 0;
-        *dest_column = 0;
-        *dest_type = 0;
-      }
+                                     &decl_file_name, &decl_line, &decl_column);
+      if (decl_line)
+        {
+          *dest_file_name = decl_file_name;
+          *dest_line = decl_line;
+          *dest_column = decl_column;
+          *dest_type = RT_Definition;
+          return;
+        }
+      else if (decl_line == 0 && ref_type == RT_Reference)
+        {
+          return;
+        }
     }
 }
 

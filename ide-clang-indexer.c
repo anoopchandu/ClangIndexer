@@ -24,7 +24,6 @@ typedef struct CompilationCommand CompilationCommand;
 
 G_DEFINE_TYPE (IdeClangIndexer, ide_clang_indexer, G_TYPE_OBJECT)
 
-
 void
 ide_clang_indexer_start (IdeClangIndexer *self)
 {
@@ -44,11 +43,15 @@ ide_clang_indexer_start (IdeClangIndexer *self)
     {
       CXTranslationUnit tu;
 
-      command = (CompilationCommand*) list->data;
+      // const char *file_name = "test/test.cpp";
+      // const char* args[] = {"-I/usr/include/glib-2.0", "-I/usr/lib/x86_64-linux-gnu/glib-2.0/include"};
 
+      command = (CompilationCommand*) list->data;
       clang_parseTranslationUnit2 (index,
-                                   command->source_file, 
+                                   command->source_file,
                                    command->command_line_args, command->num_args,
+                                   // file_name, 
+                                   // args, 2,
                                    NULL, 0,
                                    // 0,
                                    CXTranslationUnit_DetailedPreprocessingRecord,
@@ -59,9 +62,12 @@ ide_clang_indexer_start (IdeClangIndexer *self)
           g_print ("cannot create translation unit for %s\n", command->source_file);
         }
 
-      ide_clang_ast_indexer_index (self->ast_indexer, &tu, self->index);
+      ide_clang_ast_indexer_index (self->ast_indexer, tu, self->index);
       clang_disposeTranslationUnit (tu);
+      break;
     }
+
+  g_print ("Indexing complete\n");
 
   clang_disposeIndex (index);
 }

@@ -18,7 +18,7 @@ enum RefType
 
 void
 ide_clang_ast_indexer_index (IdeClangASTIndexer *self,
-                             CXTranslationUnit *tu,
+                             CXTranslationUnit tu,
                              IdeClangIndex *index);
 
 #endif
