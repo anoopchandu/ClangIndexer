@@ -64,7 +64,6 @@ ide_clang_indexer_start (IdeClangIndexer *self)
 
       ide_clang_ast_indexer_index (self->ast_indexer, tu, self->index);
       clang_disposeTranslationUnit (tu);
-      break;
     }
 
   g_print ("Indexing complete\n");

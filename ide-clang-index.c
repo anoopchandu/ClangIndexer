@@ -166,7 +166,10 @@ ide_clang_index_search_by_USR (IdeClangIndex *self,
                                                   def_line, def_column);
       
       if (def_line)
+      {
         *def_file_name = key;        
+        break;
+      }
       else
         continue; 
     }

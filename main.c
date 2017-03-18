@@ -27,12 +27,12 @@ int main (int numargs, char* args[])
 
   for (guint32 i = 0; i < num; i++)
   {
-    fscanf (file, "%s", inp);
+    fscanf (file, "%s\n", inp);
     commands[i][0] = g_strdup (inp);
-    fscanf (file, "%d", &nargs);
+    fscanf (file, "%d\n", &nargs);
     for (guint32 j = 1; j <= nargs; j++)
     {
-      fscanf (file, "%s", inp);
+      fscanf (file, "%s\n", inp);
       commands[i][j] = g_strdup (inp);
     }
     ide_clang_indexer_insert_command (indexer, commands[i][0], &commands[i][1], nargs);
