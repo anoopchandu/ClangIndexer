@@ -38,8 +38,6 @@ int main (int numargs, char* args[])
     ide_clang_indexer_insert_command (indexer, commands[i][0], &commands[i][1], nargs);
   }
 
-  // printf ("Enter to start\n");
-  // getchar ();
   ide_clang_indexer_start (indexer);
 
   index = ide_clang_indexer_get_index (indexer);

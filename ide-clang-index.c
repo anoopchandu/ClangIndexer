@@ -66,8 +66,8 @@ ide_clang_index_record_declaration (IdeClangIndex *self,
 
   *file_id = file_index->file_id;
 
-  // g_print ("recording decl : %s line : %u, start column : %u in file : %s\n", 
-  //          unique_string, line, start_column, file_name);
+  g_print ("recording decl : %s line : %u, start column : %u in file : %s\n", 
+           unique_string, line, start_column, file_name);
 
   ide_clang_file_index_record_declaration (file_index->index, unique_string,
                                            line, start_column, 
@@ -95,8 +95,8 @@ ide_clang_index_record_reference (IdeClangIndex *self,
       return;
     }
 
-  // g_print ("recording ref line : %u, start column : %u, end column %u in file : %s\n", 
-  //          line, start_column, end_column, file_name);
+  g_print ("recording ref line : %u, start column : %u, end column %u in file : %s\n", 
+           line, start_column, end_column, file_name);
 
   ide_clang_file_index_record_reference (file_index->index, line, start_column, end_column, type,
                                          file_id, declaration_id);

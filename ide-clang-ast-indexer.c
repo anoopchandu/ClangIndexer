@@ -253,7 +253,6 @@ visitor (CXCursor cursor, CXCursor parent, CXClientData clientData)
 
   g_assert (IDE_IS_CLANG_AST_INDEXER (self));
 
-  // print_cursor (self, cursor);
   cursorKind = clang_getCursorKind (cursor);
 
 //   if (clang_Location_isInSystemHeader (clang_getCursorLocation (cursor)))
@@ -264,8 +263,14 @@ visitor (CXCursor cursor, CXCursor parent, CXClientData clientData)
     {
       record_reference (self, cursor, RT_Reference);
     }
-  /* calling constructor during object creation */
-  else if (cursorKind == CXCursor_CallExpr && clang_getCursorKind (parent) == CXCursor_TypeRef)
+
+  /* TODO: for expression like new Class() <Class> will be recorded twice once for
+   *       referring class and one for consturctor
+   */
+
+  else if (cursorKind == CXCursor_CallExpr && 
+           (clang_getCursorKind (parent) == CXCursor_VarDecl || 
+            clang_getCursorKind (parent) == CXCursor_CXXNewExpr))
     {
       record_reference (self, cursor, RT_Reference);
     }

@@ -79,7 +79,7 @@ equal_references (gconstpointer a, gconstpointer b)
   return (&referencea == &referenceb);
 }
 
-/* This don't check for previous existence it should be checked by ASTIndexer */
+/* TODO : This should check declaration for previous existance */
 void 
 ide_clang_file_index_record_declaration (IdeClangFileIndex *self,
                                          const gchar *USR,
@@ -111,6 +111,7 @@ ide_clang_file_index_record_declaration (IdeClangFileIndex *self,
     g_hash_table_add (self->declarations, declaration);
 }
 
+/* TODO : This should check reference for previous existance */
 void 
 ide_clang_file_index_record_reference (IdeClangFileIndex *self,
                                        guint32 line, 
